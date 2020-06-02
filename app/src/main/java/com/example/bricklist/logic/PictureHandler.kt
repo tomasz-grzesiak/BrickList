@@ -13,10 +13,12 @@ class PictureHandler : AsyncTask<String, Int, ByteArray>() {
         var iStream: InputStream? = null
         var result: ByteArray? = null
         try {
-            val url = URL(this.newUrl + params[0])
-//            } else {
-//                URL(this.oldUrl)
-//            }
+            val url: URL
+            if (params[0] != null) {
+                url = URL(this.newUrl + params[0])
+            } else {
+                url = URL("${this.oldUrl}${params[2]}/${params[1]}.gif")
+            }
             url.openConnection().connect()
             iStream = url.openStream()
             result = iStream.readBytes()

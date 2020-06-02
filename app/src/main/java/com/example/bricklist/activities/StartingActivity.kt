@@ -1,13 +1,13 @@
 package com.example.bricklist.activities
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
@@ -15,18 +15,44 @@ import com.example.bricklist.fragments.ProjectNameFragment
 import com.example.bricklist.R
 import com.example.bricklist.logic.DBHandler
 import kotlinx.android.synthetic.main.activity_starting.*
+import java.io.*
 
 
 class StartingActivity : AppCompatActivity() {
 
     private val dbHandler: DBHandler =
         DBHandler(this)
+    private var showArchived: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_starting)
         setSupportActionBar(toolbar)
 
+        if (!File("$dataDir/databases/BrickList.db").exists()) {
+            try {
+                val iStream = assets.open("BrickList.db")
+                val databaseDir = File(dataDir, "databases")
+                if (!databaseDir.exists())
+                    databaseDir.mkdir()
+
+                val oFileStream = FileOutputStream(File("$databaseDir/BrickList.db"))
+                iStream.copyTo(oFileStream)
+                iStream.close()
+                oFileStream.flush()
+                oFileStream.close()
+            } catch (e: Exception) {
+                throw Exception()
+            }
+        }
+
+        readSettings()
+        refreshProjects()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        readSettings()
         refreshProjects()
     }
 
@@ -41,7 +67,7 @@ class StartingActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.menu_settings -> true
+            R.id.menu_settings -> settings()
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -49,8 +75,13 @@ class StartingActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == 300) {
+                Log.i("RETURN", "RETURN")
+                readSettings()
+            }
             refreshProjects()
+        }
     }
 
     fun addProject(v: View) {
@@ -58,10 +89,27 @@ class StartingActivity : AppCompatActivity() {
         startActivityForResult(intent, 100)
     }
 
+    private fun readSettings() {
+        val filename = "settings"
+        if (baseContext.getFileStreamPath(filename).exists()) {
+            val file = InputStreamReader(openFileInput(filename))
+            val br = BufferedReader(file)
+            br.readLine()
+            showArchived = br.readLine() == "true"
+            file.close()
+        } else {
+            val file = OutputStreamWriter(openFileOutput(filename, Context.MODE_PRIVATE))
+            file.write("http://fcds.cs.put.poznan.pl/MyWeb/BL/\n")
+            file.write(showArchived.toString() + "\n")
+            file.flush()
+            file.close()
+        }
+    }
+
     private fun refreshProjects() {
         content.removeAllViews()
 
-        val projects = dbHandler.getProjects()
+        val projects = dbHandler.getProjects(showArchived)
 
         if (projects.size == 0) {
             val text = TextView(this)
@@ -84,5 +132,10 @@ class StartingActivity : AppCompatActivity() {
         }
 
         fragmentTransaction.commit()
+    }
+
+    private fun settings(): Boolean {
+        startActivityForResult(Intent(this, SettingsActivity::class.java), 300)
+        return true
     }
 }

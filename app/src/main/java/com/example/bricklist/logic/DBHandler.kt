@@ -2,6 +2,8 @@ package com.example.bricklist.logic
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteCursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Bitmap
@@ -19,9 +21,14 @@ class DBHandler(context: Context) :SQLiteOpenHelper(context,
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
 
-    fun getProjects(): ArrayList<Project> {
+    fun getProjects(archived: Boolean): ArrayList<Project> {
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM Inventories",null)
+        val cursor: Cursor
+        cursor = if (archived) {
+            db.rawQuery("SELECT * FROM Inventories", null)
+        } else {
+            db.rawQuery("SELECT * FROM Inventories WHERE Active = 1", null)
+        }
         val inventories = ArrayList<Project>()
         cursor.use { cursor ->
             while (cursor.moveToNext()) {
@@ -131,7 +138,9 @@ class DBHandler(context: Context) :SQLiteOpenHelper(context,
                 BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
             }
         }
-        // TODO: if row not found,fetch image from another website
+        val imageByteArray = PictureHandler().execute(null, getCodeFromID("Parts", itemID), getCodeFromID("Colors", colorID)).get()
+        if (imageByteArray != null)
+            image = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
         cursor.close()
         db.close()
         return image
@@ -174,6 +183,14 @@ class DBHandler(context: Context) :SQLiteOpenHelper(context,
         if (count == 1)
             return true
         return false
+    }
+
+    fun archive(projectID: Int) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("Active", 0)
+        db.update("Inventories", values, "id = $projectID", null)
+        db.close()
     }
 
     fun fillInventory() {

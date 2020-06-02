@@ -3,8 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu_save"
+        android:id="@+id/menu_archive"
+        android:enabled="true"
         android:icon="@android:drawable/ic_menu_save"
-        android:title="Item"
-        app:showAsAction="always" />
+        android:title="Archiwizuj projekt" />
+    <item
+        android:id="@+id/menu_xml"
+        android:title="Eksportuj do XML" />
 </menu>

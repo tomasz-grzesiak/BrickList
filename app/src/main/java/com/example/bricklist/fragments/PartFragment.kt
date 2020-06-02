@@ -1,5 +1,6 @@
 package com.example.bricklist.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -47,12 +48,18 @@ class PartFragment : Fragment() {
         }
         val text = "$quantityInStore / $quantityInSet"
         quantity.text = text
+        if (quantityInStore == quantityInSet){
+            quantity.setTextColor(Color.GREEN)
+        }
         reduceButton.setOnClickListener {
             if (this.quantityInStore!! > 0) {
                 if (DBHandler(activity?.baseContext!!).setQuantity(this.id!!, this.quantityInStore!!-1)) {
                     this.quantityInStore = this.quantityInStore!! - 1
                     val newText = "$quantityInStore / $quantityInSet"
                     quantity.text = newText
+                    if (this.quantityInStore!! < this.quantityInSet!!){
+                        quantity.setTextColor(Color.GRAY)
+                    }
                 } else {
                     Toast.makeText(activity?.baseContext!!, "Wystąpił błąd. Załaduj ponownie dane", Toast.LENGTH_LONG).show()
                 }
@@ -64,6 +71,9 @@ class PartFragment : Fragment() {
                     this.quantityInStore = this.quantityInStore!! + 1
                     val newText = "$quantityInStore / $quantityInSet"
                     quantity.text = newText
+                    if (this.quantityInStore == this.quantityInSet){
+                        quantity.setTextColor(Color.GREEN)
+                    }
                 } else {
                     Toast.makeText(activity?.baseContext!!, "Wystąpił błąd. Załaduj ponownie dane", Toast.LENGTH_LONG).show()
                 }

@@ -71,9 +71,15 @@ class ProjectActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.menu_save -> writeXML()
+            R.id.menu_archive -> archive()
+            R.id.menu_xml -> writeXML()
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun archive(): Boolean {
+        DBHandler(this).archive(intent.extras!!.getInt("projectID"))
+        return true
     }
 
     private fun writeXML(): Boolean {

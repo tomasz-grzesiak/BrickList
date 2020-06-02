@@ -9,16 +9,26 @@ import com.example.bricklist.R
 import com.example.bricklist.logic.DBHandler
 import com.example.bricklist.logic.XMLHandler
 import kotlinx.android.synthetic.main.activity_create_project.*
+import kotlinx.android.synthetic.main.activity_create_project.toolbar
+import kotlinx.android.synthetic.main.activity_settings.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 
 class CreateProjectActivity : AppCompatActivity() {
 
-    private val url: String = "http://fcds.cs.put.poznan.pl/MyWeb/BL/"
+    private var url: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_project)
         setSupportActionBar(toolbar)
+
+        val filename = "settings"
+        val file = InputStreamReader(openFileInput(filename))
+        val br = BufferedReader(file)
+        this.url = br.readLine()
+        file.close()
     }
 
     override fun finish() {
@@ -34,7 +44,7 @@ class CreateProjectActivity : AppCompatActivity() {
         val suffix = projectCode.text.toString() + ".xml"
         val xmlHelper = XMLHandler("${this.url}$suffix", "$filesDir/$suffix")
         xmlHelper.execute()
-        Toast.makeText(this, "Pobieranie danych...", Toast.LENGTH_LONG).show() //TODO info że trwa tworzenie porjektu
+        Toast.makeText(this, "Pobieranie danych...", Toast.LENGTH_LONG).show()
         val fileDownloaded = xmlHelper.get()
 
         if (fileDownloaded != "OK") {
