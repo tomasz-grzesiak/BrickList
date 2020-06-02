@@ -79,6 +79,7 @@ class ProjectActivity : AppCompatActivity() {
 
     private fun archive(): Boolean {
         DBHandler(this).archive(intent.extras!!.getInt("projectID"))
+        Toast.makeText(this, "Projekt został pomyślnie zarchiwizowany", Toast.LENGTH_LONG).show()
         return true
     }
 
@@ -132,6 +133,7 @@ class ProjectActivity : AppCompatActivity() {
         val file = File(outDir, intent.extras!!.getString("projectName") + ".xml")
 
         transformer.transform(DOMSource(doc), StreamResult(file))
+        Toast.makeText(this, "plik wnikowy został pomyślnie utworzony", Toast.LENGTH_LONG).show()
         return true
     }
 }
